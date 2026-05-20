@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "SimpaTEXT",
+  "version": "1.0",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "contextMenus", "commands"],
+  "host_permissions": [
+    "http://127.0.0.1:11434/",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "commands": {
+    "simplify-text": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "Упростить выделенный текст"
+    },
+    "post-text": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P"
+      },
+      "description": "Сделать пост из выделенного текста"
+    },
+    "points-text": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T"
+      },
+      "description": "Сделать тезисы из выделенного текста"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["modal.css"],
+      "run_at": "document_end"
+    }
+  ]
+}

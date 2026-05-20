@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SimpaTEXT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      html, body {
+        width: 400px;
+        height: 600px;
+        margin: 0;
+      }
+    </style>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<div id="modeModal" class="modal hidden">
+    <div class="modal__box">
+        <div class="modal__text">
+            При смене режима текст будет очищен. Продолжить?
+        </div>
+        <div class="modal__actions">
+            <button id="modalCancel" class="modal-btn modal-btn--ghost">Отмена</button>
+            <button id="modalOk" class="modal-btn">Продолжить</button>
+        </div>
+    </div>
+</div>
+
+<body>
+<div class="popup">
+    <header class="popup__header">
+        <span class="popup__logo">SimpaTEXT</span>
+        <div style="display: flex; gap: 8px;">
+            <button id="themeToggleBtn" class="popup__settings-btn" aria-label="Переключить тему">
+                <svg class="theme-icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="theme-icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:none;">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+            <button id="settingsBtn" class="popup__settings-btn" aria-label="Настройки">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <section class="mode-selector">
+        <button class="mode-btn mode-btn--active" data-mode="post">ИИ-режим поста</button>
+        <button class="mode-btn" data-mode="simple">Упрощение</button>
+        <button class="mode-btn" data-mode="points">Тезисы</button>
+    </section>
+
+    <div class="simplify-levels-wrap" id="simplifyLevelsWrap">
+        <div class="simplify-levels-title">Степень упрощения:</div>
+        <div class="simplify-levels">
+            <button class="level-btn level-btn--active" data-level="light">Легкая</button>
+            <button class="level-btn" data-level="medium">Средняя</button>
+            <button class="level-btn" data-level="hard">Максимальная</button>
+        </div>
+    </div>
+
+    <div id="modeIndicator" class="mode-indicator">
+        Текущий режим: ИИ-режим поста
+    </div>
+
+    <section class="panel">
+        <div class="panel__title">Исходный текст</div>
+        <textarea id="inputText" placeholder="Вставьте ваш текст сюда..."></textarea>
+    </section>
+
+    <!-- ДВОЙНАЯ КНОПКА -->
+    <div class="split-button">
+        <button id="adaptPageBtn" class="split-btn split-btn--left">
+            <span class="split-btn-icon">🌐</span>
+            <span class="split-btn-text">Адаптировать страницу</span>
+        </button>
+        <div class="split-divider"></div>
+        <button id="simplifyBtn" class="split-btn split-btn--right">
+            <span class="split-btn-icon">✨</span>
+            <span class="split-btn-text">Инициализировать</span>
+        </button>
+    </div>
+
+    <!-- Панель выбора уровня для адаптации страницы (НЕЗАВИСИМАЯ) -->
+    <div class="page-level-panel hidden" id="pageLevelPanel">
+        <div class="page-level-title">Уровень упрощения для всей страницы:</div>
+        <div class="simplify-levels">
+            <button class="level-btn level-btn--active" data-level="light">Легкая</button>
+            <button class="level-btn" data-level="medium">Средняя</button>
+            <button class="level-btn" data-level="hard">Максимальная</button>
+        </div>
+    </div>
+
+    <!-- Кнопка возврата оригинала -->
+    <button id="restoreOriginalBtn" class="restore-btn hidden">
+        🔄 Вернуть оригинал
+    </button>
+
+    <section class="panel result-panel">
+        <div class="panel__title result-title">
+            <span>Результат</span>
+            <button id="copyResultBtn" class="copy-btn">📋 Копировать</button>
+        </div>
+        <pre id="outputText"></pre>
+    </section>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

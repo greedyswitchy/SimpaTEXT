@@ -1,0 +1,454 @@
+/* modal.css — стили для плавающего окошка рядом с текстом */
+
+.simpa-modal-overlay {
+  position: fixed;
+  z-index: 999999;
+  animation: simpaModalIn 0.2s ease-out;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@keyframes simpaModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.simpa-modal {
+  width: 380px;
+  background: #1a1a24;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.simpa-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.simpa-modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #C0B5FF, #A99CFF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.simpa-modal-close {
+  background: none;
+  border: none;
+  color: #9aa0a6;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.simpa-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.simpa-modal-body {
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #EDEDF5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.simpa-modal-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.simpa-modal-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.simpa-modal-btn-primary {
+  background: #A99CFF;
+  color: #12121a;
+}
+
+.simpa-modal-btn-primary:hover {
+  background: #c0b5ff;
+  transform: scale(0.98);
+}
+
+.simpa-modal-btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #EDEDF5;
+}
+
+.simpa-modal-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Спиннер загрузки */
+.simpa-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 12px;
+}
+
+.simpa-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(169, 156, 255, 0.2);
+  border-top-color: #A99CFF;
+  border-radius: 50%;
+  animation: simpaSpin 0.8s linear infinite;
+}
+
+@keyframes simpaSpin {
+  to { transform: rotate(360deg); }
+}
+
+.simpa-loader-text {
+  font-size: 13px;
+  color: #A0A0B0;
+}
+
+/* Светлая тема для модалки */
+.simpa-modal.light {
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.simpa-modal.light .simpa-modal-header {
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.simpa-modal.light .simpa-modal-body {
+  color: #1e1e2a;
+}
+
+.simpa-modal.light .simpa-modal-footer {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.simpa-modal.light .simpa-modal-close {
+  color: #5a5a6e;
+}
+
+.simpa-modal.light .simpa-modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a1a2e;
+}
+
+.simpa-modal.light .simpa-loader-text {
+  color: #5a5a6e;
+}
+
+/* ========== КРАСИВОЕ УВЕДОМЛЕНИЕ (TOAST) ========== */
+.simpa-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 420px;
+  background: #23202f;
+  border-radius: 20px;
+  padding: 18px 22px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(169, 156, 255, 0.3);
+  z-index: 999999;
+  font-family: 'Inter', -apple-system, sans-serif;
+  backdrop-filter: blur(12px);
+  position: relative;
+}
+
+.simpa-toast.light {
+  background: #f0edfa;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(124, 58, 237, 0.2);
+}
+
+.simpa-toast-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  color: #b0b0c0;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.simpa-toast.light .simpa-toast-close {
+  color: #7a7a8e;
+}
+
+.simpa-toast-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #A99CFF;
+}
+
+.simpa-toast.light .simpa-toast-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #7C3AED;
+}
+
+.simpa-toast-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.simpa-toast-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.simpa-toast-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #EDEDF5;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding-right: 28px;
+}
+
+.simpa-toast.light .simpa-toast-text {
+  color: #1e1e2a;
+}
+
+.simpa-toast-copy {
+  align-self: flex-start;
+  background: rgba(169, 156, 255, 0.15);
+  border: none;
+  border-radius: 40px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #A99CFF;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.simpa-toast.light .simpa-toast-copy {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
+}
+
+.simpa-toast-copy:hover {
+  background: rgba(169, 156, 255, 0.3);
+  transform: scale(0.97);
+}
+
+.simpa-toast.light .simpa-toast-copy:hover {
+  background: rgba(124, 58, 237, 0.2);
+}
+
+.simpa-dots::after {
+  content: '...';
+  animation: simpaDots 1.5s steps(4) infinite;
+  display: inline-block;
+  width: 28px;
+  text-align: left;
+}
+
+@keyframes simpaDots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+.simpa-toast-loading .simpa-toast-icon {
+  animation: simpaSpin 0.8s linear infinite;
+}
+
+@keyframes simpaSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========== ДВОЙНАЯ КНОПКА ========== */
+.split-button {
+   display: flex;
+   align-items: stretch;
+   width: 100%;
+   margin-bottom: 10px;
+   border-radius: 40px;
+   overflow: hidden;
+}
+
+.split-btn {
+   flex: 1;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
+   padding: 10px 12px;
+   border: none;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 13px;
+   font-family: 'Inter', sans-serif;
+   transition: all 0.2s ease;
+}
+
+.split-btn--left {
+   background: rgba(255, 255, 255, 0.08);
+   color: #A0A0B0;
+}
+
+.split-btn--left:hover {
+   background: rgba(255, 255, 255, 0.15);
+   color: #EDEDF5;
+}
+
+.split-btn--left.split-btn--active {
+   background: #A99CFF;
+   color: #12121a;
+}
+
+.split-btn--right {
+   background: #A99CFF;
+   color: #12121a;
+}
+
+.split-btn--right:hover {
+   filter: brightness(0.95);
+   transform: scale(0.98);
+}
+
+.split-divider {
+   width: 1px;
+   background: rgba(255, 255, 255, 0.2);
+   margin: 8px 0;
+}
+
+.split-btn-icon {
+   font-size: 16px;
+}
+
+/* Панель выбора уровня */
+.page-level-panel {
+   margin: 10px 0 12px 0;
+   padding: 12px;
+   background: rgba(255, 255, 255, 0.05);
+   border-radius: 16px;
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+   from { opacity: 0; transform: translateY(-5px); }
+   to { opacity: 1; transform: translateY(0); }
+}
+
+.page-level-title {
+   font-size: 12px;
+   color: #A0A0B0;
+   margin-bottom: 10px;
+   text-align: center;
+}
+
+/* Кнопка возврата оригинала */
+.restore-btn {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid rgba(255, 255, 255, 0.1);
+   border-radius: 40px;
+   background: transparent;
+   color: #EDEDF5;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 13px;
+   margin-top: 8px;
+   transition: all 0.2s ease;
+}
+
+.restore-btn:hover {
+   background: rgba(255, 255, 255, 0.08);
+   border-color: #A99CFF;
+}
+
+/* Светлая тема */
+body.light .split-btn--left {
+   background: #e0dee8;
+   color: #5a5a6e;
+}
+
+body.light .split-btn--left:hover {
+   background: #c8c5d4;
+   color: #1e1e2a;
+}
+
+body.light .split-btn--left.split-btn--active {
+   background: #7C3AED;
+   color: #ffffff;
+}
+
+body.light .split-btn--right {
+   background: #7C3AED;
+   color: #ffffff;
+}
+
+body.light .split-divider {
+   background: rgba(0, 0, 0, 0.15);
+}
+
+body.light .page-level-panel {
+   background: #f5f3ff;
+   border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light .page-level-title {
+   color: #5a5a6e;
+}
+
+body.light .restore-btn {
+   border-color: rgba(0, 0, 0, 0.1);
+   color: #1e1e2a;
+}
+
+body.light .restore-btn:hover {
+   background: rgba(0, 0, 0, 0.05);
+   border-color: #7C3AED;
+}

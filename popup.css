@@ -1,0 +1,747 @@
+/* ========== ОБЩИЕ ПЕРЕМЕННЫЕ (по умолчанию тёмная тема) ========== */
+:root {
+  --bg-main:#1a1a24;
+  --panel-bg:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.06);
+  --accent:#A99CFF;
+  --accent-glow:rgba(169,156,255,0.25);
+  --text:#EDEDF5;
+  --muted:#A0A0B0;
+  --radius:16px;
+  --font:'Inter',sans-serif;
+  --input-bg:rgba(0,0,0,0.2);
+  --hover-bg:rgba(255,255,255,0.08);
+  --modal-bg:rgba(30,30,40,0.95);
+  --btn-active-text:#12121a;
+  --accent-btn:#8B7CD8;
+  --mode-btn-bg:rgba(255,255,255,0.04);
+  --mode-btn-hover:rgba(255,255,255,0.12);
+}
+
+/* ========== СВЕТЛАЯ ТЕМА ========== */
+body.light {
+  --bg-main:#e8e6f0;
+  --panel-bg:#f5f3ff;
+  --border:rgba(0,0,0,0.1);
+  --accent:#7C3AED;
+  --accent-glow:rgba(124,58,237,0.2);
+  --text:#1e1e2a;
+  --muted:#5a5a6e;
+  --input-bg:#eef2f5;
+  --hover-bg:rgba(0,0,0,0.06);
+  --modal-bg:#ffffff;
+  --btn-active-text:#ffffff;
+  --accent-btn:#6D28D9;
+  --panel-shadow:0 1px 3px rgba(0,0,0,0.08);
+  --mode-btn-bg:#e0dee8;
+  --mode-btn-hover:#c8c5d4;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-weight:500;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-main);
+  color: var(--text);
+}
+
+.popup {
+  width: 400px;
+  padding: 15px 15px 20px 15px;
+  flex-direction: column;
+  overflow-y: visible;
+}
+
+.popup__header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.popup__main{
+  flex:1;
+  min-height:0;
+}
+
+.popup__logo{
+  font-size:17px;
+  font-weight:700;
+  background: linear-gradient(135deg, #C0B5FF 0%, #A99CFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing:0.3px;
+}
+
+body.light .popup__logo {
+  background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.popup__settings-btn{
+  background:rgba(255,255,255,0.05);
+  border:none;
+  cursor:pointer;
+  padding:6px;
+  border-radius:10px;
+  transition: background-color 0.2s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+body.light .popup__settings-btn{
+  background:rgba(0,0,0,0.04);
+}
+
+.popup__settings-btn svg{
+  width:17px;
+  height:17px;
+  stroke:var(--muted);
+  stroke-width:1.8;
+  fill:none;
+  transition: stroke 0.2s ease;
+}
+
+.popup__settings-btn:hover{
+  background:var(--hover-bg);
+}
+
+.popup__settings-btn:hover svg{
+  stroke:var(--accent);
+}
+
+.mode-selector{
+  display:flex;
+  gap:6px;
+  margin-bottom:20px;
+}
+
+.mode-btn{
+  flex:1;
+  padding:8px;
+  border-radius:40px;
+  border:none;
+  background:var(--mode-btn-bg);
+  color:var(--muted);
+  cursor:pointer;
+  font-size:13px;
+  font-weight:500;
+  min-width:0;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  will-change: background-color, color;
+  position: relative;
+}
+
+body.light .mode-btn{
+  border:1px solid rgba(0,0,0,0.05);
+}
+
+.mode-btn:not(.mode-btn--active):hover{
+  background:var(--mode-btn-hover);
+  color:var(--text);
+  transform: scale(0.98);
+}
+
+/* Общие настройки для свечения */
+.mode-btn::before,
+.mode-btn--active::before,
+.main-btn::before {
+  content: '';
+  position: absolute;
+  border-radius: 42px;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  opacity: 0;
+}
+
+/* Неактивные кнопки — свечение при ховере */
+.mode-btn:not(.mode-btn--active)::before {
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: var(--mode-btn-hover);
+  filter: blur(4px);
+}
+
+.mode-btn:not(.mode-btn--active):hover::before {
+  opacity: 0.35;
+}
+
+/* Активная кнопка — свечение при ховере */
+.mode-btn--active::before {
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--accent);
+  filter: blur(6px);
+}
+
+.mode-btn--active:hover::before {
+  opacity: 0.35;
+}
+
+/* Главная кнопка — свечение при ховере */
+.main-btn::before {
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--accent);
+  filter: blur(5px);
+}
+
+.main-btn:hover::before {
+  opacity: 0.3;
+}
+
+/* Светлая тема */
+body.light .mode-btn:not(.mode-btn--active):hover::before {
+  opacity: 0.25;
+}
+
+body.light .mode-btn--active:hover::before {
+  opacity: 0.25;
+}
+
+body.light .main-btn:hover::before {
+  opacity: 0.2;
+}
+
+/* ========== АКТИВНАЯ КНОПКА РЕЖИМА ========== */
+.mode-btn--active {
+  background: var(--accent);
+  color: var(--btn-active-text);
+  font-weight: 600;
+  position: relative;
+}
+
+/* ========== ГЛАВНАЯ КНОПКА ========== */
+.main-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 40px;
+  background: var(--accent-btn);
+  color: var(--btn-active-text);
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 14px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  will-change: background-color, transform;
+  position: relative;
+}
+
+.main-btn:hover {
+  transform: scale(0.98);
+  background: var(--accent);
+}
+
+.mode-indicator{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:16px;
+  margin-top:6px;
+  transition: color 0.2s ease, transform 0.2s ease;
+  letter-spacing:0.3px;
+}
+
+.mode-indicator.flash{
+  color:var(--accent);
+  transform:scale(1.02);
+}
+
+.panel{
+  background:var(--panel-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px;
+  margin-bottom:10px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: background-color, border-color;
+}
+
+body.light .panel{
+  box-shadow:var(--panel-shadow);
+}
+
+.panel:hover{
+  border-color:rgba(0,0,0,0.12);
+}
+
+body.light .panel:hover{
+  border-color:rgba(0,0,0,0.2);
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+.panel__title{
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-bottom:12px;
+  color:var(--muted);
+  padding-left:2px;
+  position:relative;
+  display:block;
+}
+
+.panel__title::after {
+  content:'';
+  position:absolute;
+  bottom:-6px;
+  left:3px;
+  right:4px;
+  height:1px;
+  background:rgba(128,128,128,0.2);
+  pointer-events:none;
+}
+
+/* ========== ПОЛЯ ВВОДА И РЕЗУЛЬТАТА ========== */
+textarea{
+  width:100%;
+  height:110px;
+  background:var(--input-bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  resize:none;
+  outline:none;
+  font-size:14px;
+  line-height:1.5;
+  padding:10px;
+  margin-top:12px;
+  overflow-y: auto;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: background-color, border-color;
+}
+
+pre{
+  margin:0;
+  height:146px;
+  overflow-y: auto;
+  white-space:pre-wrap;
+  line-height:1.6;
+  font-size:14px;
+  padding:10px;
+  background:var(--input-bg);
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin-top:26px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  will-change: background-color, border-color;
+  margin-bottom:10px;
+}
+
+body.light pre{
+  background:#eef2f5;
+  color:#2d2d3a;
+}
+
+textarea::-webkit-scrollbar,
+pre::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+textarea::-webkit-scrollbar-track,
+pre::-webkit-scrollbar-track {
+  background: rgba(128,128,128,0.15);
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+textarea::-webkit-scrollbar-thumb,
+pre::-webkit-scrollbar-thumb {
+  background: rgba(128,128,128,0.5);
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+textarea::-webkit-scrollbar-thumb:hover,
+pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(128,128,128,0.7);
+}
+
+/* Светлая тема */
+body.light textarea::-webkit-scrollbar-track,
+body.light pre::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.08);
+}
+
+body.light textarea::-webkit-scrollbar-thumb,
+body.light pre::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.35);
+}
+
+body.light textarea::-webkit-scrollbar-thumb:hover,
+body.light pre::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.5);
+}
+
+/* ========== МОДАЛКА ========== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+body.light .modal{
+  background:rgba(0,0,0,0.25);
+}
+
+.hidden{
+  display:none;
+}
+
+.modal__box{
+  width:85%;
+  background:var(--modal-bg);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal__text{
+  font-size:14px;
+  margin-bottom:18px;
+  line-height:1.5;
+  color:var(--text);
+}
+
+.modal__actions{
+  display:flex;
+  gap:10px;
+}
+
+.modal-btn{
+  flex:1;
+  padding:10px;
+  border-radius:40px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  background:var(--accent-btn);
+  color:var(--btn-active-text);
+  font-size:13px;
+  transition: background-color 0.2s ease;
+}
+
+.modal-btn:hover{
+  background:var(--accent);
+}
+
+.modal-btn--ghost{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+}
+
+.modal-btn--ghost:hover{
+  background:var(--hover-bg);
+}
+
+
+/* .popup{
+  min-height:6px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  padding-bottom:15px;
+} */
+
+/* .popup__main{
+  flex:1;
+  overflow:hidden;
+} */
+
+/* ===== Уровни упрощения (как mode-btn, но компактные) ===== */
+
+.simplify-levels-wrap {
+  margin: 0px 0 14px 0;
+}
+
+.simplify-levels-title {
+  margin: 0 0 10px 0;
+  color: #9aa0a6;
+  font-size: 13px;
+  text-align: center;
+}
+
+.simplify-levels {
+  display: flex;
+  gap: 6px;
+}
+
+.level-btn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 40px;
+  border: none;
+  background: var(--mode-btn-bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* hover как у режимов */
+.level-btn:hover {
+  background: var(--mode-btn-hover);
+  color: var(--text);
+  transform: scale(0.98);
+}
+
+.level-btn--active {
+  background: var(--accent);
+  color: var(--btn-active-text);
+}
+
+/* аккуратный glow как у mode-btn */
+.level-btn::before {
+  content: '';
+  position: absolute;
+  border-radius: 42px;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--accent);
+  filter: blur(6px);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.level-btn.active:hover::before {
+  opacity: 0.3;
+}
+
+/* ========== ДВОЙНАЯ КНОПКА (SPLIT BUTTON) ========== */
+.split-button {
+   display: flex;
+   align-items: stretch;
+   width: 100%;
+   margin-bottom: 10px;
+   border-radius: 40px;
+   overflow: hidden;
+   transition: all 0.2s ease;
+}
+
+.split-btn {
+   flex: 1;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
+   padding: 10px 12px;
+   border: none;
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 13px;
+   transition: all 0.2s ease;
+   font-family: var(--font);
+}
+
+/* Левая часть — серая (как неактивные кнопки режимов) */
+.split-btn--left {
+   background: var(--mode-btn-bg);
+   color: var(--muted);
+}
+
+.split-btn--left:hover {
+   background: var(--mode-btn-hover);
+   color: var(--text);
+}
+
+/* Правая часть — акцентная (как активная кнопка режима) */
+.split-btn--right {
+   background: var(--accent);
+   color: var(--btn-active-text);
+}
+
+.split-btn--right:hover {
+   background: var(--accent);
+   filter: brightness(0.95);
+   transform: scale(0.98);
+}
+
+/* Активное состояние левой кнопки (когда адаптация страницы активна) */
+.split-btn--left.split-btn--active {
+   background: var(--accent);
+   color: var(--btn-active-text);
+}
+
+.split-btn--left.split-btn--active:hover {
+   background: var(--accent);
+   filter: brightness(0.95);
+}
+
+/* Разделитель */
+.split-divider {
+   width: 1px;
+   background: rgba(128, 128, 128, 0.3);
+   margin: 8px 0;
+}
+
+.split-btn-icon {
+   font-size: 16px;
+}
+
+/* Светлая тема */
+body.light .split-btn--left {
+   background: var(--mode-btn-bg);
+   color: var(--muted);
+}
+
+body.light .split-btn--left:hover {
+   background: var(--mode-btn-hover);
+   color: var(--text);
+}
+
+body.light .split-btn--left.split-btn--active {
+   background: var(--accent);
+   color: #ffffff;
+}
+
+body.light .split-divider {
+   background: rgba(0, 0, 0, 0.15);
+}
+
+/* Панель выбора уровня */
+.page-level-panel {
+   margin: 10px 0 12px 0;
+   padding: 12px;
+   background: var(--panel-bg);
+   border-radius: 16px;
+   border: 1px solid var(--border);
+   animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+   from { opacity: 0; transform: translateY(-5px); }
+   to { opacity: 1; transform: translateY(0); }
+}
+
+.page-level-title {
+   font-size: 12px;
+   color: var(--muted);
+   margin-bottom: 10px;
+   text-align: center;
+}
+
+/* Кнопка возврата оригинала */
+.restore-btn {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid var(--border);
+   border-radius: 40px;
+   background: transparent;
+   color: var(--text);
+   cursor: pointer;
+   font-weight: 600;
+   font-size: 13px;
+   margin-top: 8px;
+   transition: all 0.2s ease;
+}
+
+.restore-btn:hover {
+   background: var(--hover-bg);
+   border-color: var(--accent);
+}
+
+/* ===== Кнопка копирования результата ===== */
+/* ===== Кнопка копирования результата ===== */
+.result-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.copy-btn {
+  opacity: 0;
+  pointer-events: none;
+  border: none;
+  background: var(--mode-btn-bg);
+  color: var(--muted);
+  border-radius: 40px;
+  padding: 4px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-btn.visible {
+  opacity: 0.7;
+  pointer-events: auto;
+}
+
+.copy-btn.visible:hover {
+  opacity: 1;
+  background: var(--mode-btn-hover);
+  color: var(--accent);
+}
+
+body.light .copy-btn.visible:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* Легкое свечение от верхних углов (glow) */
+.popup {
+  position: relative;
+  overflow: hidden;
+}
+
+.popup::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(169, 156, 255, 0.15) 0%, rgba(169, 156, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 5;
+  border-radius: 20px 20px 0 0;
+}
+
+/* Для светлой темы — фиолетовое свечение (чуть заметнее) */
+body.light .popup::before {
+  background: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.28) 0%, rgba(124, 58, 237, 0.03) 75%);
+}
+
+/* Плавный скролл для всего попапа и блоков */
+.popup,
+textarea,
+pre {
+  scroll-behavior: smooth;
+}
