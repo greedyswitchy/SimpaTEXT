@@ -161,7 +161,7 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
   });
 
   function adaptFullPage(level, mode) {
-    output.textContent = '🌐 Адаптация страницы... (может занять 30-60 секунд)';
+    output.textContent = '🌐 Адаптация страницы... (может занять 60-120 секунд)';
     adaptPageBtn.classList.add('split-btn--active');
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

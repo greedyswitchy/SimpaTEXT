@@ -477,7 +477,7 @@ body.light .modal{
   overflow:hidden;
 } */
 
-/* ===== Уровни упрощения (как mode-btn, но компактные) ===== */
+/* ===== Уровни упрощения ===== */
 
 .simplify-levels-wrap {
   margin: 0px 0 14px 0;
@@ -520,7 +520,7 @@ body.light .modal{
   color: var(--btn-active-text);
 }
 
-/* аккуратный glow как у mode-btn */
+/* аккуратный glow  */
 .level-btn::before {
   content: '';
   position: absolute;
@@ -674,7 +674,6 @@ body.light .split-divider {
 }
 
 /* ===== Кнопка копирования результата ===== */
-/* ===== Кнопка копирования результата ===== */
 .result-title {
   display: flex;
   align-items: center;
@@ -734,12 +733,11 @@ body.light .copy-btn.visible:hover {
   border-radius: 20px 20px 0 0;
 }
 
-/* Для светлой темы — фиолетовое свечение (чуть заметнее) */
+/* Для светлой темы  */
 body.light .popup::before {
   background: radial-gradient(ellipse at 50% 0%, rgba(124, 58, 237, 0.28) 0%, rgba(124, 58, 237, 0.03) 75%);
 }
 
-/* Плавный скролл для всего попапа и блоков */
 .popup,
 textarea,
 pre {
