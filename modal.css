@@ -452,3 +452,474 @@ body.light .restore-btn:hover {
    background: rgba(0, 0, 0, 0.05);
    border-color: #7C3AED;
 }
+
+/* ========== ПЛАВАЮЩЕЕ ОКНО АДАПТАЦИИ ========== */
+.simpa-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  min-width: 400px;
+  max-width: 800px;
+  height: 60%;
+  min-height: 300px;
+  max-height: 600px;
+  background: rgba(15, 15, 25, 0.96);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(169, 156, 255, 0.3);
+  z-index: 1000000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  backdrop-filter: blur(4px);
+  resize: both;
+}
+
+.simpa-overlay.light {
+  background: rgba(240, 240, 255, 0.98);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.simpa-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(169, 156, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: move;
+  user-select: none;
+}
+
+.simpa-overlay.light .simpa-overlay-header {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.simpa-overlay-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #A99CFF;
+}
+
+.simpa-overlay.light .simpa-overlay-title {
+  color: #7C3AED;
+}
+
+.simpa-overlay-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.simpa-overlay-controls button {
+  background: transparent;
+  border: none;
+  color: #A0A0B0;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.simpa-overlay.light .simpa-overlay-controls button {
+  color: #5a5a6e;
+}
+
+.simpa-overlay-controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #EDEDF5;
+}
+
+.simpa-overlay.light .simpa-overlay-controls button:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a1a2e;
+}
+
+.simpa-overlay-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #EDEDF5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.simpa-overlay.light .simpa-overlay-body {
+  color: #1a1a2e;
+}
+
+.simpa-overlay-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.simpa-overlay.light .simpa-overlay-footer {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.simpa-overlay-footer button {
+  padding: 8px 16px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.simpa-overlay-footer .btn-copy {
+  background: #A99CFF;
+  color: #12121a;
+}
+
+.simpa-overlay.light .simpa-overlay-footer .btn-copy {
+  background: #7C3AED;
+  color: #ffffff;
+}
+
+.simpa-overlay-footer .btn-close {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #EDEDF5;
+}
+
+.simpa-overlay.light .simpa-overlay-footer .btn-close {
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #1a1a2e;
+}
+
+.simpa-overlay-footer .btn-copy:hover {
+  transform: scale(0.98);
+  filter: brightness(0.95);
+}
+
+.simpa-overlay-footer .btn-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.simpa-overlay.light .simpa-overlay-footer .btn-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.simpa-overlay-resize {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nw-resize;
+  background: #A99CFF;
+  opacity: 0.3;
+  border-radius: 0 0 20px 0;
+}
+
+.simpa-overlay-resize:hover {
+  opacity: 0.6;
+}
+
+/* ========== УЛУЧШЕННЫЙ ТОСТ ДЛЯ КОНТЕКСТНОГО МЕНЮ ========== */
+.simpa-toast-enhanced {
+  width: 480px;
+  max-width: 90vw;
+  background: rgba(30, 30, 45, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(169, 156, 255, 0.3);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.simpa-toast-enhanced.light {
+  background: rgba(245, 245, 255, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.2);
+}
+
+/* Сохранение форматирования текста */
+.simpa-toast-text--preserve {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: 'Inter', 'SF Mono', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Кастомный скроллбар для тоста */
+.simpa-toast-text--preserve::-webkit-scrollbar {
+  width: 6px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar-track {
+  background: rgba(128, 128, 128, 0.15);
+  border-radius: 8px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar-thumb {
+  background: rgba(169, 156, 255, 0.5);
+  border-radius: 8px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar-thumb:hover {
+  background: rgba(169, 156, 255, 0.8);
+}
+
+/* Свечение для тоста */
+.simpa-toast-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 20%, rgba(169, 156, 255, 0.15), transparent 70%);
+  z-index: -1;
+}
+
+.simpa-toast-enhanced.light .simpa-toast-glow {
+  background: radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.1), transparent 70%);
+}
+
+/* Акцентная линия сверху */
+.simpa-toast-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #A99CFF, #7C3AED, #A99CFF);
+  border-radius: 3px;
+}
+
+.simpa-toast-enhanced.light::before {
+  background: linear-gradient(90deg, #7C3AED, #5B21B6, #7C3AED);
+}
+
+/* Иконка в тосте */
+.simpa-toast-enhanced .simpa-toast-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px rgba(169, 156, 255, 0.5));
+}
+
+/* Кнопка копирования */
+.simpa-toast-enhanced .simpa-toast-copy {
+  background: linear-gradient(135deg, rgba(169, 156, 255, 0.2), rgba(124, 58, 237, 0.2));
+  border: 1px solid rgba(169, 156, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.simpa-toast-enhanced .simpa-toast-copy:hover {
+  background: linear-gradient(135deg, rgba(169, 156, 255, 0.4), rgba(124, 58, 237, 0.4));
+  transform: scale(0.98);
+}
+
+/* Кнопка закрытия */
+.simpa-toast-enhanced .simpa-toast-close {
+  color: #A0A0B0;
+  transition: all 0.2s;
+}
+
+.simpa-toast-enhanced .simpa-toast-close:hover {
+  color: #A99CFF;
+  background: rgba(169, 156, 255, 0.15);
+  transform: rotate(90deg);
+}
+
+/* ========== УЛУЧШЕННЫЙ ТОСТ ========== */
+.simpa-toast-enhanced {
+  width: 480px;
+  max-width: 90vw;
+  background: rgba(30, 30, 45, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(169, 156, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.simpa-toast-enhanced.light {
+  background: rgba(245, 245, 255, 0.98);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.2);
+}
+
+.simpa-toast-text--preserve {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.6;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar {
+  width: 6px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar-track {
+  background: rgba(128, 128, 128, 0.15);
+  border-radius: 8px;
+}
+
+.simpa-toast-text--preserve::-webkit-scrollbar-thumb {
+  background: rgba(169, 156, 255, 0.5);
+  border-radius: 8px;
+}
+
+.simpa-toast-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 20%, rgba(169, 156, 255, 0.15), transparent 70%);
+  z-index: -1;
+}
+
+.simpa-toast-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #A99CFF, #7C3AED, #A99CFF);
+  border-radius: 3px;
+}
+
+.simpa-toast-enhanced .simpa-toast-icon {
+  font-size: 28px;
+}
+
+.simpa-toast-enhanced .simpa-toast-copy {
+  background: linear-gradient(135deg, rgba(169, 156, 255, 0.2), rgba(124, 58, 237, 0.2));
+  border: 1px solid rgba(169, 156, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-weight: 600;
+}
+
+.simpa-toast-enhanced .simpa-toast-copy:hover {
+  background: linear-gradient(135deg, rgba(169, 156, 255, 0.4), rgba(124, 58, 237, 0.4));
+  transform: scale(0.98);
+}
+
+.simpa-toast-enhanced .simpa-toast-close {
+  color: #A0A0B0;
+}
+
+.simpa-toast-enhanced .simpa-toast-close:hover {
+  color: #A99CFF;
+  background: rgba(169, 156, 255, 0.15);
+  transform: rotate(90deg);
+}
+
+/* Фиксированный тост */
+.simpa-toast-fixed {
+  position: fixed !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  animation: slideInRight 0.3s ease-out;
+  z-index: 9999999 !important;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.simpa-toast-fixed .simpa-toast-text {
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.simpa-toast-fixed .simpa-toast-text--preserve {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.simpa-toast-fixed .simpa-toast-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #888;
+}
+
+.simpa-toast-fixed .simpa-toast-close:hover {
+  color: #A99CFF;
+}
+
+.simpa-toast-fixed .simpa-toast-copy {
+  margin-top: 12px;
+  background: rgba(169, 156, 255, 0.15);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #A99CFF;
+}
+
+.simpa-toast-fixed.light .simpa-toast-copy {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7C3AED;
+}
+
+.simpa-toast-fixed .simpa-toast-glow {
+  display: none;
+}
+
+.simpa-dots::after {
+  content: '...';
+  animation: dots 1.5s steps(4) infinite;
+  display: inline-block;
+  width: 28px;
+  text-align: left;
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}

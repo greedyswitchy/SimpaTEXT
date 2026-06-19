@@ -1,404 +1,269 @@
-chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
-  if (req.type === 'PROCESS_TEXT') {
+// ========== SimpaTEXT SERVICE WORKER (ИСПРАВЛЕННЫЙ) ==========
+console.log('🚀 Service worker загружен');
 
-    function buildSimplePrompt(text, level = 'light') {
-      const baseRules = `
-Ты — строгий редактор для упрощения текста. Перепиши текст простыми словами ТОЛЬКО на русском языке.
+function truncateText(text, maxLength = 2000) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
 
-## ПРАВИЛА ПО РУССКОМУ ЯЗЫКУ:
-- Используй русские слова, но НЕ ВЫРЕЗАЙ технические термины и названия (.NET, Framework, CLS, API, JSON, XML, GitHub, Visual Studio, Windows, Linux, macOS, C#, Java, Python и т.п.)
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические названия (.NET, CLS и т.п.) ОСТАВЛЯЙ как есть
+function getModePrompt(mode, text, level) {
+  console.log('📝 Формируем промпт:', mode, level);
+  
+  const truncatedText = truncateText(text, 2000);
+  
+  const languageRule = 'ОТВЕЧАЙ ТОЛЬКО НА РУССКОМ. МОЖНО ОСТАВЛЯТЬ АНГЛИЙСКИЕ АББРЕВИАТУРЫ. НЕ ИСПОЛЬЗУЙ КИТАЙСКИЕ ИЕРОГЛИФЫ. НЕ ИСПОЛЬЗУЙ МАРКДАУН.';
+  
+  if (mode === 'terms') {
+    return `${languageRule}\n\nНайди сложные термины и объясни их простыми словами. Пиши кратко.\n\nТекст:\n${truncatedText}`;
+  }
+  
+  if (mode === 'simple') {
+    const levelRules = {
+      light: `Слегка упрости текст. Замени сложные слова на простые. СОХРАНИ все важные детали, цифры, термины. НЕ УДАЛЯЙ факты. Сжатие 10-15%.`,
+      
+      medium: `Упрости текст. СОХРАНИ: ключевые цифры, термины ("баннерная слепота"), авторский стиль ("наверняка"), логику. Удали только повторы и воду. Сжатие 25-35%.`,
+      
+      hard: `СОКРАТИ текст сильно. Твой ответ ДОЛЖЕН БЫТЬ КОРОЧЕ исходного примерно на 50-60%.
+      
+СОХРАНИ ТОЛЬКО САМОЕ ГЛАВНОЕ:
+- Основную мысль каждого абзаца (1 предложение)
+- Ключевые термины ("баннерная слепота", "имиджевый контент")
+- Вывод
 
-## ТРЕБОВАНИЯ К ФОРМАТИРОВАНИЮ:
-- Сохраняй исходные переносы строк
-- Сохраняй пустые строки между абзацами (делай \n\n)
-- Не склеивай строки в один абзац
+НЕ ПИШИ ДЛИННЕЕ ОРИГИНАЛА!
+Удали: примеры, повторы, воду, вводные конструкции.
 
-## ПРАВИЛА:
-1. НЕ добавляй новую информацию
-2. НЕ делай выводов
-3. НЕ придумывай примеры
-4. НЕ меняй факты
-5. Сохрани все ключевые смыслы
-6. Пиши ТОЛЬКО на русском (кроме технических названий)
+Твой ответ должен быть КОРОТКИМ и по СУТИ.`
+    };
+    return `${languageRule}\n\n${levelRules[level]}\n\nТекст:\n${truncatedText}`;
+  }
+  
+  if (mode === 'points') {
+    const textLength = truncatedText.length;
+    let instruction = '';
+    if (textLength < 300) instruction = 'Текст короткий. Выдели 2-3 главных тезиса.';
+    else if (textLength < 800) instruction = 'Выдели 3-5 главных мыслей.';
+    else instruction = 'Выдели 4-6 ключевых тезисов.';
+    
+    return `${languageRule}\n\n${instruction} Каждый пункт с новой строки и с дефиса. Сохраняй цифры, даты, термины.\n\nТекст:\n${truncatedText}`;
+  }
+  
+  return truncatedText;
+}
 
-## ПРИМЕР:
-Исходный текст: ".NET Framework — платформа для создания приложений"
-Правильный ответ: ".NET Framework — платформа для создания приложений"
-`;
-
-      if (level === 'light') {
-        return `${baseRules}
-
-## РЕЖИМ: ЛЕГКОЕ УПРОЩЕНИЕ (20-30%)
-
-Разрешено:
-- Заменять длинные словосочетания на короткие по смыслу
-- Использовать синонимы
-- Перестраивать предложения для простоты
-
-Исходный текст:
-${text}`;
-      }
-
-      if (level === 'medium') {
-        return `${baseRules}
-
-## РЕЖИМ: СРЕДНЕЕ УПРОЩЕНИЕ (35-55%)
-
-Разрешено:
-- Только удалять слова и конструкции
-- Запрещено перефразировать и перестраивать
-
-Исходный текст:
-${text}`;
-      }
-
-      if (level === 'hard') {
-        return `${baseRules}
-
-## РЕЖИМ: МАКСИМАЛЬНОЕ УПРОЩЕНИЕ (55-75%)
-
-Можно только:
-- Удалять всё, что не несёт смысловой нагрузки
-- Нельзя менять слова и порядок слов
-
-Исходный текст:
-${text}`;
-      }
+function cleanResponse(response, mode, originalLength) {
+  if (!response) return '';
+  
+  let cleaned = response;
+  
+  // Удаляем иероглифы
+  cleaned = cleaned.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g, '');
+  
+  // Удаляем маркдаун
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  cleaned = cleaned.replace(/__([^_]+)__/g, '$1');
+  cleaned = cleaned.replace(/\*([^*]+)\*/g, '$1');
+  cleaned = cleaned.replace(/_([^_]+)_/g, '$1');
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+  cleaned = cleaned.replace(/^#+\s+/gm, '');
+  
+  // Удаляем следы промпта
+  const patterns = [
+    /^ОТВЕЧАЙ ТОЛЬКО НА РУССКОМ.*$/gm,
+    /^Слегка упрости текст.*$/gm,
+    /^Упрости текст.*$/gm,
+    /^СОКРАТИ текст.*$/gm,
+    /^Найди сложные термины.*$/gm,
+    /^Выдели.*главных мыслей.*$/gm,
+    /^Текст короткий.*$/gm,
+    /^Твой ответ должен быть КОРОЧЕ.*$/gm,
+    /^НЕ ПИШИ ДЛИННЕЕ ОРИГИНАЛА.*$/gm,
+    /^Текст:\n.*$/gm
+  ];
+  
+  patterns.forEach(p => { cleaned = cleaned.replace(p, ''); });
+  
+  cleaned = cleaned.replace(/[ \t]+/g, ' ');
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  cleaned = cleaned.trim();
+  
+  // Для максимального сжатия: если результат длиннее оригинала, обрезаем
+  if (mode === 'simple' && originalLength && cleaned.length > originalLength * 0.6) {
+    console.log(`⚠️ Результат слишком длинный (${cleaned.length} > ${originalLength * 0.6}), обрезаем`);
+    const sentences = cleaned.split(/[.!?]\s+/);
+    if (sentences.length > 3) {
+      cleaned = sentences.slice(0, 3).join('. ') + '.';
     }
+  }
+  
+  if (mode === 'points' && cleaned && !cleaned.startsWith('-')) {
+    const lines = cleaned.split('\n');
+    const fixed = lines.map(l => {
+      if (l.trim() && !l.startsWith('-') && !l.startsWith('•')) {
+        return '- ' + l.trim();
+      }
+      return l;
+    });
+    cleaned = fixed.join('\n');
+  }
+  
+  return cleaned || '⚠️ Не удалось обработать текст';
+}
 
-    let prompt = '';
-
-    if (req.mode === 'post') {
-      prompt = `Ты — автор Telegram-канала. Напиши КОРОТКИЙ пост на русском языке, который СУММИРУЕТ главную мысль текста.
-
-## ПРАВИЛА:
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические термины (.NET, Framework, CLS, API и т.п.) МОЖНО
-- ТОЛЬКО русский язык
-
-## ЖЁСТКИЕ ПРАВИЛА:
-1. Не переписывай текст целиком — выдели САМОЕ ГЛАВНОЕ
-2. Сделай пост в 3-4 раза КОРОЧЕ оригинала
-3. Первая строка — заголовок (короткий, цепляющий)
-4. После заголовка пустая строка
-5. 2-3 коротких абзаца (1-2 предложения каждый)
-6. Добавь 1 эмодзи (🔥, ⚡, 💡, 🚀)
-
-## ТРЕБОВАНИЯ К ФОРМАТИРОВАНИЮ:
-- Сохраняй пустые строки между абзацами (делай \n\n)
-- Каждый абзац начинай с новой строки
-- Не склеивай строки в один сплошной текст
-
-Исходный текст:
-${req.text}`;
-
-    } else if (req.mode === 'simple') {
-      prompt = buildSimplePrompt(req.text, req.level);
-
-    } else if (req.mode === 'points') {
-      prompt = `Ты — строгий составитель тезисов. Выдели из текста 3-5 главных мыслей ТОЛЬКО на русском языке.
-
-## ПРАВИЛА:
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические термины (.NET, Framework, CLS, API и т.п.) МОЖНО
-- ТОЛЬКО русский язык
-
-## СТРОГИЕ ПРАВИЛА:
-1. НЕ выдумывай то, чего нет в тексте
-2. НЕ меняй смысл исходного текста
-3. НЕ добавляй выводы от себя
-4. Каждый тезис начинается с "- "
-5. Каждый тезис — одно короткое предложение
-6. Используй только факты из текста
-
-## ПРИМЕР:
-Исходный текст: ".NET Framework — платформа для создания приложений. Она содержит классы и интерфейсы."
-Правильные тезисы:
-- .NET Framework — платформа для создания приложений
-- Она содержит классы и интерфейсы
-
-Исходный текст:
-${req.text}`;
+async function callOllama(prompt, source = 'unknown') {
+  console.log(`📡 (${source}) Вызов Ollama (qwen2.5:1.5b), длина:`, prompt.length);
+  
+  const body = JSON.stringify({
+    model: 'qwen2.5:1.5b',
+    prompt: prompt,
+    stream: false,
+    options: {
+      temperature: 0.3,
+      num_predict: 600,
+      top_p: 0.9,
+      repeat_penalty: 1.1
     }
-
-    fetch('http://127.0.0.1:11434/api/generate', {
+  });
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  
+  try {
+    const response = await fetch('http://127.0.0.1:11434/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen2.5:7b',
-        prompt: prompt,
-        stream: false,
-        options: {
-          temperature: 0.3,
-          num_predict: 600
-        }
-      })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      let result = data.response || 'Нет ответа';
-
-      // ===== ПОСТОБРАБОТКА: УДАЛЯЕМ ТОЛЬКО ИЕРОГЛИФЫ (НЕ ТРОГАЕМ АНГЛИЙСКИЕ СЛОВА И БУКВЫ) =====
-      
-      // Удаляем китайские, японские, корейские иероглифы (диапазоны Unicode)
-      result = result.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g, '');
-      
-      // Чистим лишние пробелы, НО НЕ ТРОГАЕМ ПЕРЕНОСЫ СТРОК
-      result = result.replace(/[ \t]+/g, ' ');
-      result = result.replace(/[ \t]+\n/g, '\n');
-      result = result.replace(/\n{3,}/g, '\n\n');
-      result = result.replace(/^[\s,.;:]+/, '');
-      result = result.trim();
-
-      // Удаляем пояснения модели
-      result = result.replace(/^(Выполняю|Твой ответ|Вот упрощённый|Сокращение|Режим|Текст:|Исходный текст|Пример|Правильный ответ)[^\n]*\n?/gi, '');
-      result = result.trim();
-
-      if (req.mode === 'points') {
-        result = result.replace(/^[^\-]*?(?=\-)/, '');
-        result = result.replace(/[^\n\-][^\-]*?\n/g, (match) => {
-          if (!match.startsWith('- ')) return '';
-          return match;
-        });
-      }
-
-      if (result === '') {
-        result = 'Не удалось обработать текст. Попробуйте ещё раз.';
-      }
-
-      sendResponse({ result: result });
-    })
-    .catch(err => {
-      let userMessage = `❌ Ошибка: ${err.message}`;
-      sendResponse({ result: userMessage });
+      body: body,
+      signal: controller.signal,
+      keepalive: true
     });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    
+    if (data && data.response && data.response.trim()) {
+      return { success: true, result: data.response };
+    }
+    throw new Error('Пустой ответ');
+  } catch (e) {
+    clearTimeout(timeoutId);
+    console.error(`❌ Ошибка:`, e.message);
+    if (e.name === 'AbortError') {
+      return { success: false, error: 'Превышено время ожидания (60 сек)' };
+    }
+    if (e.message.includes('Failed to fetch')) {
+      return { success: false, error: 'Ollama не запущен! Запустите: ollama serve' };
+    }
+    if (e.message.includes('HTTP 404')) {
+      return { success: false, error: 'Модель не найдена. Установите: ollama pull qwen2.5:1.5b' };
+    }
+    return { success: false, error: e.message };
+  }
+}
 
+function getErrorMessage(error) {
+  return `❌ ${error}`;
+}
+
+// ========== MAIN HANDLER ==========
+chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
+  console.log('📨 Получено:', req.type);
+  
+  if (req.type === 'PROCESS_TEXT') {
+    const { text, mode, level } = req;
+    const originalLength = text?.length || 0;
+    
+    if (!text || text.trim().length < 20) {
+      sendResponse({ result: '⚠️ Текст слишком короткий' });
+      return true;
+    }
+    
+    const prompt = getModePrompt(mode, text, level);
+    
+    callOllama(prompt, sender?.url ? 'попап' : 'контекст').then(res => {
+      if (res.success) {
+        let cleaned = cleanResponse(res.result, mode, originalLength);
+        if (!cleaned) cleaned = '⚠️ Не удалось обработать текст';
+        sendResponse({ result: cleaned });
+      } else {
+        sendResponse({ result: getErrorMessage(res.error) });
+      }
+    }).catch(err => {
+      sendResponse({ result: `❌ Ошибка: ${err.message}` });
+    });
+    
     return true;
   }
 });
 
-// ========== КОНТЕКСТНОЕ МЕНЮ И ГОРЯЧИЕ КЛАВИШИ ==========
-
+// ========== КОНТЕКСТНОЕ МЕНЮ ==========
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: 'simpaParent',
-      title: '✨ SimpaTEXT',
-      contexts: ['selection']
-    });
-    chrome.contextMenus.create({
-      id: 'simpaSimple',
-      parentId: 'simpaParent',
-      title: '📖 Упростить текст',
-      contexts: ['selection']
-    });
-    chrome.contextMenus.create({
-      id: 'simpaPost',
-      parentId: 'simpaParent',
-      title: '📱 Пост для соцсетей',
-      contexts: ['selection']
-    });
-    chrome.contextMenus.create({
-      id: 'simpaPoints',
-      parentId: 'simpaParent',
-      title: '📝 Тезисы',
-      contexts: ['selection']
-    });
+    chrome.contextMenus.create({ id: 'simpaParent', title: '✨ SimpaTEXT', contexts: ['selection'] });
+    chrome.contextMenus.create({ id: 'simpaSimple', parentId: 'simpaParent', title: '📖 Упростить', contexts: ['selection'] });
+    chrome.contextMenus.create({ id: 'simpaTerms', parentId: 'simpaParent', title: '📚 Термины', contexts: ['selection'] });
+    chrome.contextMenus.create({ id: 'simpaPoints', parentId: 'simpaParent', title: '📝 Тезисы', contexts: ['selection'] });
   });
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  const selectedText = info.selectionText;
-  if (!selectedText) return;
+  const text = info.selectionText;
+  if (!text) return;
+  
   let mode = '';
   if (info.menuItemId === 'simpaSimple') mode = 'simple';
-  if (info.menuItemId === 'simpaPost') mode = 'post';
+  if (info.menuItemId === 'simpaTerms') mode = 'terms';
   if (info.menuItemId === 'simpaPoints') mode = 'points';
-  chrome.storage.local.get(['defaultLevel'], (result) => {
-    const level = result.defaultLevel || 'light';
-    processAndShowOnPage(tab.id, selectedText, mode, level);
+  
+  chrome.storage.local.get(['defaultLevel'], (res) => {
+    processAndShow(tab.id, text, mode, res.defaultLevel || 'light');
   });
 });
 
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (!tab || !tab.id) return;
+  if (!tab?.id) return;
+  
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    func: () => window.getSelection().toString()
+    func: () => window.getSelection()?.toString() || ''
   }, (results) => {
-    const selectedText = results?.[0]?.result;
-    if (!selectedText) return;
+    const text = results?.[0]?.result;
+    if (!text) return;
+    
     let mode = '';
     if (command === 'simplify-text') mode = 'simple';
-    if (command === 'post-text') mode = 'post';
+    if (command === 'post-text') mode = 'terms';
     if (command === 'points-text') mode = 'points';
-    chrome.storage.local.get(['defaultLevel'], (result) => {
-      const level = result.defaultLevel || 'light';
-      processAndShowOnPage(tab.id, selectedText, mode, level);
+    
+    chrome.storage.local.get(['defaultLevel'], (res) => {
+      processAndShow(tab.id, text, mode, res.defaultLevel || 'light');
     });
   });
 });
 
 function getModeName(mode) {
-  if (mode === 'simple') return 'Упрощение текста';
-  if (mode === 'post') return 'Пост для соцсетей';
-  if (mode === 'points') return 'Тезисы';
-  return 'Обработка';
+  if (mode === 'simple') return 'Упрощение';
+  if (mode === 'terms') return 'Термины';
+  return 'Тезисы';
 }
 
-function buildSimplePromptForPage(text, level = 'light') {
-  const baseRules = `
-Ты — строгий редактор для упрощения текста. Перепиши текст простыми словами ТОЛЬКО на русском языке.
-
-## ПРАВИЛА:
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические термины (.NET, Framework, CLS, API и т.п.) МОЖНО
-- ТОЛЬКО русский язык
-
-## ТРЕБОВАНИЯ К ФОРМАТИРОВАНИЮ:
-- Сохраняй исходные переносы строк
-- Сохраняй пустые строки между абзацами (делай \n\n)
-- Не склеивай строки в один абзац
-
-## ПРАВИЛА:
-1. НЕ добавляй новую информацию
-2. НЕ делай выводов
-3. НЕ меняй факты
-4. Пиши ТОЛЬКО на русском (кроме технических названий)
-`;
-
-  if (level === 'light') {
-    return `${baseRules}
-
-## РЕЖИМ: ЛЕГКОЕ УПРОЩЕНИЕ
-
-Исходный текст:
-${text}`;
-  }
-  if (level === 'medium') {
-    return `${baseRules}
-
-## РЕЖИМ: СРЕДНЕЕ УПРОЩЕНИЕ
-
-Исходный текст:
-${text}`;
-  }
-  if (level === 'hard') {
-    return `${baseRules}
-
-## РЕЖИМ: МАКСИМАЛЬНОЕ УПРОЩЕНИЕ
-
-Исходный текст:
-${text}`;
-  }
+async function processAndShow(tabId, text, mode, level) {
+  console.log('🔄 Обработка контекстного меню:', mode);
+  
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'SHOW_LOADING', modeName: getModeName(mode) });
+  } catch (e) {}
+  
+  const prompt = getModePrompt(mode, text, level);
+  const response = await callOllama(prompt, 'контекстное_меню');
+  
+  let resultText = response.success ? cleanResponse(response.result, mode, text.length) : `❌ ${response.error}`;
+  
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'SHOW_RESULT', result: resultText });
+  } catch (e) {}
 }
 
-function processAndShowOnPage(tabId, text, mode, level) {
-  chrome.tabs.sendMessage(tabId, {
-    type: 'SHOW_LOADING',
-    modeName: getModeName(mode)
-  }).catch(() => {});
-
-  let prompt = '';
-
-  if (mode === 'post') {
-    prompt = `Ты — автор Telegram-канала. Напиши КОРОТКИЙ пост на русском языке, который СУММИРУЕТ главную мысль текста.
-
-## ПРАВИЛА:
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические термины (.NET, Framework, CLS, API и т.п.) МОЖНО
-- ТОЛЬКО русский язык
-
-## ЖЁСТКИЕ ПРАВИЛА:
-1. Не переписывай текст целиком — выдели САМОЕ ГЛАВНОЕ
-2. Сделай пост в 3-4 раза КОРОЧЕ оригинала
-3. Первая строка — заголовок (короткий, цепляющий)
-4. После заголовка пустая строка
-5. 2-3 коротких абзаца (1-2 предложения каждый)
-6. Добавь 1 эмодзи (🔥, ⚡, 💡, 🚀)
-
-## ТРЕБОВАНИЯ К ФОРМАТИРОВАНИЮ:
-- Сохраняй пустые строки между абзацами (делай \n\n)
-- Каждый абзац начинай с новой строки
-- Не склеивай строки в один сплошной текст
-
-Исходный текст:
-${text}`;
-  } else if (mode === 'simple') {
-    prompt = buildSimplePromptForPage(text, level);
-  } else if (mode === 'points') {
-    prompt = `Ты — составитель тезисов. Выдели из текста 3-5 главных мыслей ТОЛЬКО на русском языке.
-
-## ПРАВИЛА:
-- ЗАПРЕЩЕНЫ любые иероглифы (китайские, японские, корейские)
-- Технические термины (.NET, Framework, CLS, API и т.п.) МОЖНО
-- ТОЛЬКО русский язык
-
-## Правила:
-- Каждый тезис начинается с "- "
-- Только факты из текста
-
-Исходный текст:
-${text}`;
-  }
-
-  fetch('http://127.0.0.1:11434/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'qwen2.5:7b',
-      prompt: prompt,
-      stream: false,
-      options: {
-        temperature: 0.3,
-        num_predict: 500
-      }
-    })
-  })
-  .then(res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  })
-  .then(data => {
-    let result = data.response || 'Нет ответа';
-    
-    // ===== ПОСТОБРАБОТКА: УДАЛЯЕМ ТОЛЬКО ИЕРОГЛИФЫ =====
-    
-    // Удаляем китайские, японские, корейские иероглифы
-    result = result.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g, '');
-    
-    // Чистим лишние пробелы, НО НЕ ТРОГАЕМ ПЕРЕНОСЫ
-    result = result.replace(/[ \t]+/g, ' ');
-    result = result.replace(/[ \t]+\n/g, '\n');
-    result = result.replace(/\n{3,}/g, '\n\n');
-    result = result.trim();
-    
-    result = result.replace(/^(Выполняю|Твой ответ|Вот упрощённый|Сокращение|Режим|Текст:|Исходный текст)[^\n]*\n?/gi, '');
-    result = result.trim();
-    
-    if (mode === 'points') {
-      result = result.replace(/^[^\-]*?(?=\-)/, '');
-    }
-    if (result === '') {
-      result = 'Не удалось обработать текст. Попробуйте ещё раз.';
-    }
-    chrome.tabs.sendMessage(tabId, {
-      type: 'SHOW_MODAL',
-      result: result,
-      modeName: getModeName(mode)
-    }).catch(() => {});
-  })
-  .catch(err => {
-    chrome.tabs.sendMessage(tabId, {
-      type: 'SHOW_MODAL',
-      result: `❌ Ошибка: ${err.message}`,
-      modeName: getModeName(mode)
-    }).catch(() => {});
-  });
-}
+console.log('✅ Service worker готов'); 

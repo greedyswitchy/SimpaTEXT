@@ -9,12 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const themeIconDark = document.querySelector('.theme-icon-dark');
   const themeIconLight = document.querySelector('.theme-icon-light');
 
-  let currentMode = 'post';
+  let currentMode = 'simple';
   let currentLevel = 'light';
 
   const modeNames = {
-    post: 'ИИ-режим поста',
     simple: 'Упрощение текста',
+    terms: 'Расшифровка терминов',
     points: 'Тезисы'
   };
 
@@ -35,27 +35,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== Восстановление состояния =====
-chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
-  if (result.inputText) input.value = result.inputText;
-  if (result.outputText && result.outputText !== 'Обработка...') output.textContent = result.outputText;
-  if (result.mode) {
-    currentMode = result.mode;
-    const levelBlock = document.getElementById('simplifyLevelsWrap');
-    if (currentMode === 'simple') {
-      levelBlock.classList.remove('hidden');
+  chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
+    if (result.inputText) input.value = result.inputText;
+    if (result.outputText && result.outputText !== 'Обработка...') output.textContent = result.outputText;
+    if (result.mode) {
+      currentMode = result.mode;
+      const levelBlock = document.getElementById('simplifyLevelsWrap');
+      if (currentMode === 'simple') {
+        levelBlock.classList.remove('hidden');
+      } else {
+        levelBlock.classList.add('hidden');
+      }
+      buttons.forEach(btn => {
+        btn.classList.toggle('mode-btn--active', btn.dataset.mode === currentMode);
+      });
     } else {
+      const levelBlock = document.getElementById('simplifyLevelsWrap');
       levelBlock.classList.add('hidden');
     }
-    buttons.forEach(btn => {
-      btn.classList.toggle('mode-btn--active', btn.dataset.mode === currentMode);
-    });
-  } else {
-    // При первом запуске — скрываем уровни (режим 'post')
-    const levelBlock = document.getElementById('simplifyLevelsWrap');
-    levelBlock.classList.add('hidden');
-  }
-  updateIndicator();
-});
+    updateIndicator();
+  });
 
   // ===== Сохранение текста =====
   let saveTimeout;
@@ -138,14 +137,38 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
     );
   });
 
-  // ===== АДАПТАЦИЯ ВСЕЙ СТРАНИЦЫ (НЕЗАВИСИМАЯ) =====
+  // ===== ПРОВЕРКА ДОСТУПНОСТИ OLLAMA =====
+  async function checkOllamaStatus() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch('http://127.0.0.1:11434/api/tags', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch (error) {
+      console.log('Ollama check failed:', error);
+      return false;
+    }
+  }
+
+  // ===== АДАПТАЦИЯ ВСЕЙ СТРАНИЦЫ =====
   const adaptPageBtn = document.getElementById('adaptPageBtn');
   const restoreOriginalBtn = document.getElementById('restoreOriginalBtn');
   const pageLevelPanel = document.getElementById('pageLevelPanel');
   let currentPageLevel = 'light';
+  let isAdapting = false;
 
-  adaptPageBtn.addEventListener('click', (e) => {
+  adaptPageBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
+    
+    // Проверяем доступность Ollama
+    const isOllamaAvailable = await checkOllamaStatus();
+    if (!isOllamaAvailable) {
+      output.textContent = '❌ Ollama не запущен! Запустите "ollama serve" и убедитесь, что модель qwen2.5:7b установлена.';
+      saveOutput(output.textContent);
+      return;
+    }
+    
     pageLevelPanel.classList.toggle('hidden');
   });
 
@@ -156,42 +179,88 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
       btn.classList.add('level-btn--active');
       currentPageLevel = btn.dataset.level;
       pageLevelPanel.classList.add('hidden');
-      adaptFullPage(currentPageLevel, 'simple');
+      // 🔧 ИСПРАВЛЕНО: используем currentMode вместо жестко зашитого 'simple'
+      adaptFullPage(currentPageLevel, currentMode);
     });
   });
 
-  function adaptFullPage(level, mode) {
-    output.textContent = '🌐 Адаптация страницы... (может занять 60-120 секунд)';
+  async function adaptFullPage(level, mode) {
+    if (isAdapting) {
+      output.textContent = '⚠️ Адаптация уже выполняется, подождите...';
+      return;
+    }
+    
+    isAdapting = true;
+    output.textContent = '🌐 Адаптация страницы... (может занять 30-90 секунд)';
+    saveOutput(output.textContent);
     adaptPageBtn.classList.add('split-btn--active');
+    
+    // Скрываем панель уровней если открыта
+    pageLevelPanel.classList.add('hidden');
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tabs[0]) throw new Error('Не найдена активная вкладка');
+      
+      // Показываем уведомление на странице
       chrome.tabs.sendMessage(tabs[0].id, {
-        type: 'ADAPT_PAGE',
-        level: level,
-        mode: mode
-      }, (response) => {
-        if (response && response.success) {
-          output.textContent = `✅ Адаптировано ${response.adaptedCount} элементов страницы!`;
-          restoreOriginalBtn.classList.remove('hidden');
-        } else if (response && response.error) {
-          output.textContent = `❌ Ошибка: ${response.error}`;
-          adaptPageBtn.classList.remove('split-btn--active');
-        } else {
-          output.textContent = '❌ Не удалось адаптировать страницу. Убедитесь, что расширение имеет доступ к этой странице.';
-          adaptPageBtn.classList.remove('split-btn--active');
-        }
+        type: 'SHOW_LOADING',
+        modeName: `Адаптация страницы (${mode === 'simple' ? 'упрощение' : mode === 'terms' ? 'термины' : 'тезисы'})`
+      }).catch(() => {});
+      
+      const response = await new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'ADAPT_PAGE',
+          level: level,
+          mode: mode
+        }, resolve);
       });
-    });
+      
+      if (response && response.success) {
+        output.textContent = `✅ Адаптировано ${response.adaptedCount || 'множество'} элементов страницы в режиме "${mode === 'simple' ? 'Упрощение' : mode === 'terms' ? 'Термины' : 'Тезисы'}"!`;
+        saveOutput(output.textContent);
+        restoreOriginalBtn.classList.remove('hidden');
+      } else if (response && response.error) {
+        output.textContent = `❌ Ошибка: ${response.error}`;
+        saveOutput(output.textContent);
+        adaptPageBtn.classList.remove('split-btn--active');
+        restoreOriginalBtn.classList.add('hidden');
+      } else {
+        output.textContent = '❌ Не удалось адаптировать страницу. Возможно, на этом сайте есть ограничения (CSP). Попробуйте на другом сайте.';
+        saveOutput(output.textContent);
+        adaptPageBtn.classList.remove('split-btn--active');
+        restoreOriginalBtn.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Adaptation error:', error);
+      output.textContent = `❌ Ошибка: ${error.message}`;
+      saveOutput(output.textContent);
+      adaptPageBtn.classList.remove('split-btn--active');
+      restoreOriginalBtn.classList.add('hidden');
+    } finally {
+      isAdapting = false;
+      // Скрываем loading тост
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'HIDE_LOADING' }).catch(() => {});
+      }
+    }
   }
 
-  restoreOriginalBtn.addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { type: 'RESTORE_ORIGINAL' }, () => {
-        output.textContent = '🔄 Оригинальный текст восстановлен';
-        restoreOriginalBtn.classList.add('hidden');
-        adaptPageBtn.classList.remove('split-btn--active');
-      });
-    });
+  restoreOriginalBtn.addEventListener('click', async () => {
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'RESTORE_ORIGINAL' }, () => {
+          output.textContent = '🔄 Оригинальный текст восстановлен';
+          saveOutput(output.textContent);
+          restoreOriginalBtn.classList.add('hidden');
+          adaptPageBtn.classList.remove('split-btn--active');
+        });
+      }
+    } catch (error) {
+      console.error('Restore error:', error);
+    }
   });
 
   // ===== Перед закрытием =====
@@ -203,7 +272,7 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
     });
   });
 
-  // ===== КНОПКА КОПИРОВАНИЯ В ПОПАПЕ =====
+  // ===== КНОПКА КОПИРОВАНИЯ =====
   const copyBtn = document.getElementById('copyResultBtn');
   const outputPre = document.getElementById('outputText');
   let copyTimeout = null;
@@ -223,7 +292,7 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
     hideCopyButton();
     
     const text = outputPre.textContent;
-    if (text && text !== 'Обработка...' && text !== 'Введите текст.' && !text.startsWith('❌')) {
+    if (text && text !== 'Обработка...' && text !== 'Введите текст.' && !text.startsWith('❌') && !text.startsWith('🌐') && !text.startsWith('✅')) {
       copyTimeout = setTimeout(() => {
         showCopyButton();
       }, 3000);
@@ -240,7 +309,7 @@ chrome.storage.session.get(['inputText', 'outputText', 'mode'], (result) => {
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
       const text = outputPre.textContent;
-      if (!text || text === 'Обработка...' || text === 'Введите текст.' || text.startsWith('❌')) return;
+      if (!text || text === 'Обработка...' || text === 'Введите текст.' || text.startsWith('❌') || text.startsWith('🌐')) return;
       
       try {
         await navigator.clipboard.writeText(text);

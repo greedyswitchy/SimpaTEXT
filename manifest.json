@@ -2,12 +2,14 @@
   "manifest_version": 3,
   "name": "SimpaTEXT",
   "version": "1.0",
+  "description": "Упрощение текста, расшифровка терминов и выделение тезисов через локальную LLM",
   "action": {
     "default_popup": "popup.html"
   },
   "permissions": ["storage", "contextMenus", "commands"],
   "host_permissions": [
     "http://127.0.0.1:11434/",
+    "http://localhost:11434/",
     "<all_urls>"
   ],
   "background": {
@@ -24,13 +26,13 @@
       "suggested_key": {
         "default": "Ctrl+Shift+P"
       },
-      "description": "Сделать пост из выделенного текста"
+      "description": "Расшифровать термины"
     },
     "points-text": {
       "suggested_key": {
         "default": "Ctrl+Shift+T"
       },
-      "description": "Сделать тезисы из выделенного текста"
+      "description": "Выделить тезисы"
     }
   },
   "content_scripts": [
